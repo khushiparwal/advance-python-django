@@ -33,10 +33,17 @@ def user_signup(request):
     return render(request, 'registration.html')
 
 def user_signin(request):
+    message = ''
     if request.method == "POST":
         if request.POST.get('operation') == "signIn":
-            print(request.POST.get('loginId'))
-            print(request.POST.get('password'))
+            loginId = request.POST.get('loginId')
+            password = request.POST.get('password')
+            service = UserService()
+            user_data = service.auth(loginId, password)
+            if len(user_data)!=0:
+                return render(request,'welcome.html',{'firstName':user_data[0].get('firstName')})
+            else:
+                message = "Login ID and Password Invalid"
         if request.POST.get('operation') == "signUp":
             return redirect("/ors/signup/")
-    return render(request, 'login.html')
+    return render(request, 'login.html',{'message':message})
