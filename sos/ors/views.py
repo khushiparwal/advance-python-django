@@ -41,9 +41,51 @@ def user_signin(request):
             service = UserService()
             user_data = service.auth(loginId, password)
             if len(user_data)!=0:
-                return render(request,'welcome.html',{'firstName':user_data[0].get('firstName')})
+                request.session['firstName'] = user_data[0].get('firstName')
+                return redirect('/ors/welcome')
+                #return render(request,'welcome.html',{'firstName':user_data[0].get('firstName')})
             else:
                 message = "Login ID and Password Invalid"
         if request.POST.get('operation') == "signUp":
             return redirect("/ors/signup/")
     return render(request, 'login.html',{'message':message})
+
+def logout(request):
+    request.session['firstName'] = None
+    return redirect('/ors/signin')
+
+def test_list(request):
+    list = [
+        {"id": 1, "firstName": "abc", "lastName": "aaa", "email": "abc@gmail.com", "password": "12345"},
+        {"id": 2, "firstName": "xyz", "lastName": "aaa", "email": "abc@gmail.com", "password": "12345"},
+        {"id": 3, "firstName": "pqr", "lastName": "aaa", "email": "abc@gmail.com", "password": "12345"}
+    ]
+    return render(request,'testlist.html',{"list":list})
+
+def user_save(request):
+    message=''
+    if request.method == "POST":
+        params = {}
+        params['firstName'] = request.POST.get('firstName')
+        params['lastName'] = request.POST.get('lastName')
+        params['loginId'] = request.POST.get('loginId')
+        params['password'] = request.POST.get('password')
+        params['dob'] = request.POST.get('dob')
+        params['address'] = request.POST.get('address')
+        service = UserService()
+        if request.POST.get('operation')=='save':
+            service.add(params)
+            message = "User added successfully!"
+        if request.POST.get('operation')=="update":
+            params['id']=request.POST.get('id')
+            service.update(params)
+            message = "User updated successfully."
+    return render(request,"user.html",{"message":message})
+
+def user_list(request):
+    params = {}
+    params['pageNo'] = 1
+    params['pageSize'] = 5
+    service = UserService()
+    list = service.search(params)
+    return render(request, 'userlist.html',{"list":list})
