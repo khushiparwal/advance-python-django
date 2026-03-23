@@ -1,5 +1,7 @@
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
+
+from .service.marksheet_service import MarksheetService
 from .service.user_service import UserService
 
 
@@ -64,8 +66,8 @@ def test_list(request):
 
 def user_save(request):
     message=''
+    params={}
     if request.method == "POST":
-        params = {}
         params['firstName'] = request.POST.get('firstName')
         params['lastName'] = request.POST.get('lastName')
         params['loginId'] = request.POST.get('loginId')
@@ -77,15 +79,49 @@ def user_save(request):
             service.add(params)
             message = "User added successfully!"
         if request.POST.get('operation')=="update":
-            params['id']=request.POST.get('id')
+            params['id']=int(request.POST.get('id',0))
             service.update(params)
             message = "User updated successfully."
-    return render(request,"user.html",{"message":message})
+    return render(request,"user.html",{"form":params,"message":message})
 
 def user_list(request):
     params = {}
     params['pageNo'] = 1
     params['pageSize'] = 5
+    if request.method == "POST":
+        if request.POST['operation']=="next":
+            params['pageNo'] = int(request.POST['pageNo'])
+            params['pageNo'] += 1
+        if request.POST['operation']=='previous':
+            params['pageNo'] = int(request.POST['pageNo'])
+            params['pageNo'] -= 1
+        if request.POST['operation'] == "search":
+            params['firstName'] = request.POST['firstName']
     service = UserService()
     list = service.search(params)
-    return render(request, 'userlist.html',{"list":list})
+    index = (params['pageNo']-1)*5
+    return render(request, 'userlist.html',{"list":list, 'pageNo':params['pageNo'], 'index':index})
+
+
+def student_register(request):
+    if request.method == "POST":
+        params = {}
+        params['rollno'] = request.POST.get('rollno')
+        params['name'] = request.POST.get('name')
+        params['physics'] = request.POST.get('physics')
+        params['chemistry'] = request.POST.get('chemistry')
+        params['maths'] = request.POST.get('maths')
+        service = MarksheetService()
+        service.add(params)
+    return render(request, 'marksheet.html')
+
+def delete_user(request,id=0):
+    service = UserService()
+    service.delete(id)
+    return redirect("/ors/list/")
+
+def edit_user(request, id=0):
+    service = UserService()
+    user_data = service.get(id)
+    user_data[0]['dob'] = user_data[0]['dob'].strftime('%Y-%m-%d')
+    return render(request,"user.html",{'form': user_data[0]})

@@ -10,3 +10,13 @@ class User(models.Model):
 
     class Meta:
         db_table = 'sos_user'
+
+class Marksheet(models.Model):
+    rollno = models.IntegerField()
+    name = models.CharField(max_length=100)
+    physics = models.IntegerField()
+    chemistry = models.IntegerField()
+    maths = models.IntegerField()
+
+    class Meta:
+        db_table= 'sos_marksheet'

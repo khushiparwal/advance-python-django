@@ -13,4 +13,7 @@ urlpatterns = [
     path('testlist/',views.test_list),
     path('save/',views.user_save),
     path('list/',views.user_list),
+    path('register/',views.student_register),
+    path('delete/<int:id>/',views.delete_user),
+    path('edit/<int:id>/',views.edit_user),
 ]
