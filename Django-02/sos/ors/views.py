@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
+from .models import Marksheet
 
 def welcome(request):
     return render(request,'welcome.html')
@@ -41,3 +42,32 @@ def user_signin(request):
 def user_logout(request):
     logout(request)
     return redirect("/ors/signin/")
+
+def add_marksheet(request):
+    message = ''
+    if request.method=="POST":
+        marksheet = Marksheet()
+        marksheet.rollNo = request.POST["rollNo"]
+        marksheet.name = request.POST["name"]
+        marksheet.physics = request.POST["physics"]
+        marksheet.chemistry = request.POST["chemistry"]
+        marksheet.maths = request.POST['maths']
+        marksheet.save()
+        message = "Marksheet added successfully"
+    return render(request,"marksheet.html",{"message":message})
+
+def marksheet_list(request):
+    list = Marksheet.objects.all()
+    return render(request,"marksheetlist.html",{"list":list})
+
+def delete_marksheet(request,id):
+    obj = Marksheet.objects.get(id=id)
+    obj.delete()
+    return redirect('/ors/list/')
+
+def edit_marksheet(request,id):
+    message = ""
+    obj = Marksheet.objects.get(id=id)
+    return render(request, "marksheet.html",{"form":obj,"id":id,"message":message})
+
+
